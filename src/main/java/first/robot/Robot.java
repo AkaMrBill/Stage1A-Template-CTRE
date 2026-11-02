@@ -12,6 +12,9 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import first.robot.simulation.DrivetrainSim;
+import first.robot.simulation.FuelSim;
+import first.robot.simulation.SingleFlywheelSim;
+
 import org.wpilib.drive.DifferentialDrive;
 import org.wpilib.framework.OpModeRobot;
 import org.wpilib.hardware.bus.CANPort;
@@ -27,17 +30,30 @@ import org.wpilib.hardware.imu.OnboardIMU.MountOrientation;
  */
 public class Robot extends OpModeRobot {
 
+  // Drive Train Motors
   private final TalonFX leftLeader = new TalonFX(0, new CANBus(CANPort.CAN_S0));
   private final TalonFX leftFollower = new TalonFX(1, new CANBus(CANPort.CAN_S0));
   private final TalonFX rightLeader = new TalonFX(2, new CANBus(CANPort.CAN_S0));
   private final TalonFX rightFollower = new TalonFX(3, new CANBus(CANPort.CAN_S0));
+  
+  //Game Piece Transport Motors
+  public final TalonFX intakeLauncher = new TalonFX(4, new CANBus(CANPort.CAN_S0));
+  public final TalonFX feeder = new TalonFX(5, new CANBus(CANPort.CAN_S0));
 
   public final DifferentialDrive drivetrain =
       new DifferentialDrive(leftLeader::setThrottle, rightLeader::setThrottle);
 
+
   private final OnboardIMU imu = new OnboardIMU(MountOrientation.FLAT);
 
+
   private final DrivetrainSim drivetrainSim = new DrivetrainSim(leftLeader, rightLeader);
+
+
+  private final SingleFlywheelSim intakeLauncherSim = 
+    SingleFlywheelSim.forIntakeLauncher(intakeLauncher);
+
+  private final SingleFlywheelSim feederSim = SingleFlywheelSim.forFeeder(feeder);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -64,5 +80,10 @@ public class Robot extends OpModeRobot {
   @Override
   public void simulationPeriodic() {
     drivetrainSim.periodic();
+    
+    intakeLauncherSim.periodic();
+    feederSim.periodic();
+
+    FuelSim.periodic();
   }
 }
